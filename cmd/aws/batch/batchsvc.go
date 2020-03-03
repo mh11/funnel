@@ -377,8 +377,8 @@ func (b *batchsvc) CreateJobDefinition(overwrite bool) (*batch.JobDefinition, er
 				aws.String("--DynamoDB.TableBasename"),
 				aws.String(b.conf.Funnel.DynamoDB.TableBasename),
 				aws.String("--taskID"),
-				// This is a template variable that will be replaced with the taskID.
-				aws.String("Ref::taskID"),
+				// This is a template variable that will be replaced with the task id.
+				aws.String("Ref::TASKID"),
 			},
 			JobRoleArn: aws.String(jobRole),
 		},

@@ -1,0 +1,9 @@
+{
+  "jobQueueName": "funnel-job-queue",
+  "computeEnvironmentOrder": [{
+    "computeEnvironment": "arn:aws:batch:us-west-2:xxxxxxxxxxxx:compute-environment/funnel-compute-environment",
+    "order": 0
+  }],
+  "priority": 1,
+  "state": "ENABLED"
+}

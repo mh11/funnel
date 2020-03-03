@@ -60,6 +60,7 @@ Database: "dynamodb"
 Compute: "aws-batch"
 EventWriters:
   - "log"
+  - "dynamodb"
 
 Dynamodb:
   TableBasename: "funnel"
@@ -87,7 +88,7 @@ funnel server run --config /path/to/config.yaml
 
 ### Known issues
 
-The `Task.Resources.DiskGb` field does not have any effect. See [issue 317](https://github.com/ohsu-comp-bio/funnel/issues/317).
+The `Task.Resources.DiskGb` field does not have any effect. See [issue 317](https://github.com/ohsu-comp-bio/funnel/issues/317). 
 
 [0]: http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html
 [1]: http://docs.aws.amazon.com/batch/latest/userguide/what-is-batch.html

@@ -1,0 +1,59 @@
+{
+  "jobDefinitionName": "funnel-job-def",
+  "type": "container",
+  "containerProperties": {
+    "image": "docker.io/ohsu-comp-bio/funnel:latest",
+    "vcpus": 1,
+    "memory": 128,
+    "command": [
+      "worker",
+      "run"
+      "--EventWriters",
+      "log",
+      "--EventWriters",
+      "dynamodb",
+			"--Database",
+			"dynamodb",
+			"--DynamoDB.Region",
+			"us-west-2",
+			"--DynamoDB.TableBasename",
+			"funnel",
+			"--Worker.WorkDir",
+			"/opt/funnel-work-dir",
+      "--taskID",
+      "Ref::TASKID"
+    ],
+    "jobRoleArn": "arn:aws:iam::xxxxxxxxxxxx:role/FunnelECSTaskRole",,
+    "volumes": [
+      {
+        "host": {
+          "sourcePath": "/var/run/docker.sock"
+        },
+        "name": "docker_sock"
+      },
+      {
+        "host": {
+          "sourcePath": "/opt/funnel-work-dir"
+        },
+        "name": "funnel-work-dir"
+      }
+
+    ],
+    "environment": [],
+    "mountPoints": [
+      {
+        "containerPath": "/var/run/docker.sock",
+        "readOnly": false,
+        "sourceVolume": "docker_sock"
+      },
+      {
+        "containerPath": "/opt/funnel-work-dir",
+        "readOnly": false,
+        "sourceVolume": "funnel-work-dir"
+      }
+    ],
+    "readonlyRootFilesystem": false,
+    "privileged": true,
+    "ulimits": []
+  }
+}

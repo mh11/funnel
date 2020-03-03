@@ -1,8 +1,6 @@
 package batch
 
 import (
-	"time"
-
 	"github.com/ohsu-comp-bio/funnel/config"
 )
 
@@ -92,7 +90,9 @@ type JobRoleConfig struct {
 // DefaultConfig returns default configuration of for AWS Batch resource creation.
 func DefaultConfig() Config {
 	c := Config{
-		AWSConfig: config.AWSConfig{},
+		AWSConfig: config.AWSConfig{
+			MaxRetries: 10,
+		},
 		ComputeEnv: ComputeEnvConfig{
 			Name:          "funnel-compute-environment",
 			InstanceTypes: []string{"optimal"},
@@ -170,8 +170,6 @@ func DefaultConfig() Config {
 	c.Funnel.DynamoDB.TableBasename = "funnel"
 	c.Funnel.DynamoDB.Region = ""
 	c.Funnel.Worker.WorkDir = "/opt/funnel-work-dir"
-	c.Funnel.Worker.LogUpdateRate = config.Duration(time.Minute * 5)
-	c.Funnel.Worker.LogTailSize = 10000
 
 	return c
 }

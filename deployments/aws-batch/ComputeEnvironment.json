@@ -1,0 +1,23 @@
+{
+  "computeEnvironmentName": "funnel-compute-environment",
+  "computeResources": {
+    "desiredvCpus": 0,
+    "instanceRole": "arn:aws:iam::xxxxxxxxxxxx:instance-profile/ecsInstanceRole",
+    "instanceTypes": ["optimal"],
+    "maxvCpus": 256,
+    "minvCpus": 0,
+    "securityGroupIds": [
+      "sg-xxxxxxxx"
+    ],
+    "subnets": [
+      "subnet-xxxxxxxx"
+    ],
+    "tags": {
+      "Name": "Funnel"
+    },
+    "type": "EC2"
+  },
+  "serviceRole": "arn:aws:iam::xxxxxxxxxxxx:role/service-role/AWSBatchServiceRole",
+  "state": "ENABLED",
+  "type": "MANAGED"
+}
