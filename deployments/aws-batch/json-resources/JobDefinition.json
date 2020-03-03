@@ -1,5 +1,5 @@
 {
-  "jobDefinitionName": "funnel-job-def",
+  "jobDefinitionName": "funnel-job",
   "type": "container",
   "containerProperties": {
     "image": "docker.io/ohsu-comp-bio/funnel:latest",
@@ -23,7 +23,7 @@
       "--taskID",
       "Ref::TASKID"
     ],
-    "jobRoleArn": "arn:aws:iam::xxxxxxxxxxxx:role/FunnelECSTaskRole",,
+    "jobRoleArn": "arn:aws:iam::xxxxxxxxxxxx:role/FunnelEcsTaskRole",,
     "volumes": [
       {
         "host": {
