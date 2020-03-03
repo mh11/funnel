@@ -75,7 +75,7 @@ func (b *batchsvc) CreateComputeEnvironment() (*batch.ComputeEnvironmentDetail, 
 	}
 
 	var serviceRole string
-	grres, err := iamCli.GetRole(&iam.GetRoleInput{RoleName: aws.String("AWSBatchServiceRole")})
+	grres, err := iamCli.GetRole(&iam.GetRoleInput{RoleName: aws.String("FunnelBatchServiceRole")})
 	if err == nil {
 		serviceRole = *grres.Role.Arn
 	} else {
@@ -91,27 +91,27 @@ func (b *batchsvc) CreateComputeEnvironment() (*batch.ComputeEnvironmentDetail, 
 		}
 		bsrBinary, err := json.Marshal(bsrPolicy)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling assume role policy for AWSBatchServiceRole: %v", err)
+			return nil, fmt.Errorf("error marshaling assume role policy for FunnelBatchServiceRole: %v", err)
 		}
 		cr, err := iamCli.CreateRole(&iam.CreateRoleInput{
 			AssumeRolePolicyDocument: aws.String(string(bsrBinary)),
-			RoleName:                 aws.String("AWSBatchServiceRole"),
+			RoleName:                 aws.String("FunnelBatchServiceRole"),
 		})
 		if err != nil {
-			return nil, fmt.Errorf("error creating AWSBatchServiceRole: %v", err)
+			return nil, fmt.Errorf("error creating FunnelBatchServiceRole: %v", err)
 		}
 		_, err = iamCli.AttachRolePolicy(&iam.AttachRolePolicyInput{
-			PolicyArn: aws.String("arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole"),
-			RoleName:  aws.String("AWSBatchServiceRole"),
+			PolicyArn: aws.String("arn:aws:iam::aws:policy/service-role/FunnelBatchServiceRole"),
+			RoleName:  aws.String("FunnelBatchServiceRole"),
 		})
 		if err != nil {
-			return nil, fmt.Errorf("error attaching policies to AWSBatchServiceRole: %v", err)
+			return nil, fmt.Errorf("error attaching policies to FunnelBatchServiceRole: %v", err)
 		}
 		serviceRole = *cr.Role.Arn
 	}
 
 	var instanceRole string
-	grres, err = iamCli.GetRole(&iam.GetRoleInput{RoleName: aws.String("ecsInstanceRole")})
+	grres, err = iamCli.GetRole(&iam.GetRoleInput{RoleName: aws.String("FunnelEcsInstanceRole")})
 	if err == nil {
 		instanceRole = *grres.Role.Arn
 	} else {
@@ -127,21 +127,21 @@ func (b *batchsvc) CreateComputeEnvironment() (*batch.ComputeEnvironmentDetail, 
 		}
 		irBinary, err := json.Marshal(irPolicy)
 		if err != nil {
-			return nil, fmt.Errorf("error marshaling assume role policy for ecsInstanceRole: %v", err)
+			return nil, fmt.Errorf("error marshaling assume role policy for FunnelEcsInstanceRole: %v", err)
 		}
 		cr, err := iamCli.CreateRole(&iam.CreateRoleInput{
 			AssumeRolePolicyDocument: aws.String(string(irBinary)),
-			RoleName:                 aws.String("ecsInstanceRole"),
+			RoleName:                 aws.String("FunnelEcsInstanceRole"),
 		})
 		if err != nil {
-			return nil, fmt.Errorf("error creating ecsInstanceRole: %v", err)
+			return nil, fmt.Errorf("error creating FunnelEcsInstanceRole: %v", err)
 		}
 		_, err = iamCli.AttachRolePolicy(&iam.AttachRolePolicyInput{
 			PolicyArn: aws.String("arn:aws:iam::aws:policy/AmazonEC2ContainerServiceforEC2Role"),
-			RoleName:  aws.String("ecsInstanceRole"),
+			RoleName:  aws.String("FunnelEcsInstanceRole"),
 		})
 		if err != nil {
-			return nil, fmt.Errorf("error attaching policies to ecsInstanceRole: %v", err)
+			return nil, fmt.Errorf("error attaching policies to FunnelEcsInstanceRole: %v", err)
 		}
 		instanceRole = *cr.Role.Arn
 	}
