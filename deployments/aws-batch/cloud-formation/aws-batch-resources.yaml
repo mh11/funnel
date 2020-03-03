@@ -94,31 +94,31 @@ Resources:
             Principal:
               Service: ecs-tasks.amazonaws.com
             Action: sts:AssumeRole
-    Policies:
-      - PolicyName: FunnelS3
-        PolicyDocument:
-          Version: '2012-10-17',
-          Statement: 
-            - Effect: Allow
-              Action:
-                - 's3:GetBucketLocation'
-                - 's3:GetObject'
-                - 's3:ListObjects'
-                - 's3:ListBucket'
-                - 's3:CreateBucket'
-                - 's3:PutObject'
+      Policies:
+        - PolicyName: FunnelS3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement: 
+              - Effect: Allow
+                Action:
+                  - 's3:GetBucketLocation'
+                  - 's3:GetObject'
+                  - 's3:ListObjects'
+                  - 's3:ListBucket'
+                  - 's3:CreateBucket'
+                  - 's3:PutObject'
                 Resource: '*'
-      - PolicyName: FunnelDynamodb
-        PolicyDocument:
-          Version: '2012-10-17',
-          Statement: 
-            - Effect: Allow
-              Action:
-                - 'dynamodb:GetItem'
-                - 'dynamodb:PutItem'
-                - 'dynamodb:UpdateItem'
-                - 'dynamodb:Query'
-              Resource: '*'
+        - PolicyName: FunnelDynamodb
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement: 
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:GetItem'
+                  - 'dynamodb:PutItem'
+                  - 'dynamodb:UpdateItem'
+                  - 'dynamodb:Query'
+                Resource: '*'
 
   ##-----------------
   ## Batch Resources
@@ -134,14 +134,14 @@ Resources:
         Command:
           - 'worker'
           - 'run'
-          - '--EventWriters',
+          - '--EventWriters'
           - 'log'
           - '--EventWriters'
           - 'dynamodb'
           - '--Database'
           - 'dynamodb'
-          '--DynamoDB.Region'
-          - 'AWS::Region'
+          - '--DynamoDB.Region'
+          - Ref: AWS::Region
           - '--DynamoDB.TableBasename'
           - 'funnel'
           - '--Worker.WorkDir'
@@ -162,9 +162,13 @@ Resources:
           - ContainerPath: /opt/funnel-work-dir
             ReadOnly: false
             SourceVolume: funnel-work-dir
-        ReadOnlyRootFilesystem: true
+        Environment: []
+        Ulimits: []
+        ResourceRequirements: []
+        User: ""
+        ReadonlyRootFilesystem: true
         Privileged: true
-        JobRole:
+        JobRoleArn:
           Ref: EcsTaskRole
       RetryStrategy:
         Attempts: 1
