@@ -36,43 +36,39 @@ func (dcmd DockerCommand) Run(ctx context.Context) error {
 		dcmd.Event.Error("failed to sync docker client API version", err)
 	}
 
-	pullcmd := exec.Command("docker", "pull", dcmd.Image)
+	pullcmd := exec.Command("ls", dcmd.Image)
 	err = pullcmd.Run()
 	if err != nil {
-		dcmd.Event.Error("failed to pull docker image", err)
+		dcmd.Event.Error("failed to locate singularity image", err)
 	}
 
-	args := []string{"run", "-i", "--read-only"}
+	args := []string{"exec"}
 
-	if dcmd.RemoveContainer {
-		args = append(args, "--rm")
-	}
-
-	if dcmd.Env != nil {
-		for k, v := range dcmd.Env {
-			args = append(args, "-e", fmt.Sprintf("%s=%s", k, v))
-		}
-	}
+	// if dcmd.Env != nil {
+	// 	for k, v := range dcmd.Env {
+	// 		args = append(args, "-e", fmt.Sprintf("%s=%s", k, v))
+	// 	}
+	// }
 
 	if dcmd.ContainerName != "" {
-		args = append(args, "--name", dcmd.ContainerName)
+		dcmd.Event.Error("Container name not supported")
 	}
 
 	if dcmd.Workdir != "" {
-		args = append(args, "-w", dcmd.Workdir)
+		args = append(args, "--pwd", dcmd.Workdir)
 	}
 
 	for _, vol := range dcmd.Volumes {
-		arg := formatVolumeArg(vol)
-		args = append(args, "-v", arg)
+		arg := formatVolumeArg(vol, dcmd)
+		args = append(args, "--bind", arg)
 	}
 
 	args = append(args, dcmd.Image)
 	args = append(args, dcmd.Command...)
 
 	// Roughly: `docker run --rm -i --read-only -w [workdir] -v [bindings] [imageName] [cmd]`
-	dcmd.Event.Info("Running command", "cmd", "docker "+strings.Join(args, " "))
-	cmd := exec.Command("docker", args...)
+	dcmd.Event.Info("Running command", "cmd", "singularity "+strings.Join(args, " "))
+	cmd := exec.Command("singularity", args...)
 
 	if dcmd.Stdin != nil {
 		cmd.Stdin = dcmd.Stdin
@@ -94,13 +90,12 @@ func (dcmd DockerCommand) Stop() error {
 	return cmd.Run()
 }
 
-func formatVolumeArg(v Volume) string {
-	// `o` is structed as "HostPath:ContainerPath:Mode".
-	mode := "rw"
+func formatVolumeArg(v Volume, dcmd DockerCommand) string {
+	// `o` is structed as "HostPath:ContainerPath".
 	if v.Readonly {
-		mode = "ro"
+		dcmd.Event.Error("Read only mount not supported")
 	}
-	return fmt.Sprintf("%s:%s:%s", v.HostPath, v.ContainerPath, mode)
+	return fmt.Sprintf("%s:%s", v.HostPath, v.ContainerPath)
 }
 
 type metadata struct {
