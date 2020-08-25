@@ -2,13 +2,10 @@ package worker
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"os/exec"
 	"strings"
-	"time"
 
 	"github.com/ohsu-comp-bio/funnel/events"
 )
@@ -42,8 +39,10 @@ func (dcmd DockerCommand) Run(ctx context.Context) error {
 		dcmd.Event.Error("failed to locate singularity image", err)
 	}
 
+	// args := []string{"instance", "start"}
 	args := []string{"exec"}
 
+	/* environment settings */
 	// if dcmd.Env != nil {
 	// 	for k, v := range dcmd.Env {
 	// 		args = append(args, "-e", fmt.Sprintf("%s=%s", k, v))
@@ -66,7 +65,10 @@ func (dcmd DockerCommand) Run(ctx context.Context) error {
 	args = append(args, dcmd.Image)
 	args = append(args, dcmd.Command...)
 
-	// Roughly: `docker run --rm -i --read-only -w [workdir] -v [bindings] [imageName] [cmd]`
+	// Ideally:
+	//   `singularity instance start --pwd [workdir] --bind [bindings] [imageName] [instanceName]`
+	//     -> singularity exec [instanceName] [cmd]
+	// BUT for the moment -> just exec without instance
 	dcmd.Event.Info("Running command", "cmd", "singularity "+strings.Join(args, " "))
 	cmd := exec.Command("singularity", args...)
 
@@ -79,15 +81,17 @@ func (dcmd DockerCommand) Run(ctx context.Context) error {
 	if dcmd.Stderr != nil {
 		cmd.Stderr = dcmd.Stderr
 	}
-	go dcmd.inspectContainer(ctx)
+	// go dcmd.inspectContainer(ctx) // switch off for singularity at the moment
 	return cmd.Run()
 }
 
 // Stop stops the container.
 func (dcmd DockerCommand) Stop() error {
 	dcmd.Event.Info("Stopping container", "container", dcmd.ContainerName)
-	cmd := exec.Command("docker", "stop", dcmd.ContainerName)
-	return cmd.Run()
+	// dcmd.Event.Info("Stopping container", "container", dcmd.ContainerName)
+	// cmd := exec.Command("singularity", "instance", "stop", dcmd.ContainerName)
+	// return cmd.Run()
+	return nil
 }
 
 func formatVolumeArg(v Volume, dcmd DockerCommand) string {
@@ -106,33 +110,33 @@ type metadata struct {
 
 // inspectContainer inspects the docker container for metadata.
 func (dcmd *DockerCommand) inspectContainer(ctx context.Context) {
-	// Give the container time to start.
-	time.Sleep(2 * time.Second)
+	// // Give the container time to start.
+	// time.Sleep(2 * time.Second)
 
-	// Inspect the container for metadata
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
+	// // Inspect the container for metadata
+	// ticker := time.NewTicker(time.Second)
+	// defer ticker.Stop()
 
-	for i := 0; i < 5; i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			cmd := exec.CommandContext(ctx, "docker", "inspect", dcmd.ContainerName)
-			out, err := cmd.Output()
-			if err == nil {
-				meta := []metadata{}
-				err := json.Unmarshal(out, &meta)
-				if err == nil && len(meta) == 1 {
-					dcmd.Event.Info("container metadata",
-						"containerID", meta[0].ID,
-						"containerName", meta[0].Name,
-						"containerImageHash", meta[0].Image)
-					return
-				}
-			}
-		}
-	}
+	// for i := 0; i < 5; i++ {
+	// 	select {
+	// 	case <-ctx.Done():
+	// 		return
+	// 	case <-ticker.C:
+	// 		cmd := exec.CommandContext(ctx, "docker", "inspect", dcmd.ContainerName)
+	// 		out, err := cmd.Output()
+	// 		if err == nil {
+	// 			meta := []metadata{}
+	// 			err := json.Unmarshal(out, &meta)
+	// 			if err == nil && len(meta) == 1 {
+	// 				dcmd.Event.Info("container metadata",
+	// 					"containerID", meta[0].ID,
+	// 					"containerName", meta[0].Name,
+	// 					"containerImageHash", meta[0].Image)
+	// 				return
+	// 			}
+	// 		}
+	// 	}
+	// }
 }
 
 type dockerVersion struct {
@@ -143,20 +147,21 @@ type dockerVersion struct {
 // SyncDockerAPIVersion ensures that the client uses the same API version as
 // the server.
 func SyncDockerAPIVersion() error {
-	if os.Getenv("DOCKER_API_VERSION") == "" {
-		cmd := exec.Command("docker", "version", "--format", `{"Server": "{{.Server.APIVersion}}", "Client": "{{.Client.APIVersion}}"}`)
-		out, err := cmd.Output()
-		if err != nil {
-			return fmt.Errorf("docker version command failed: %v", err)
-		}
-		version := &dockerVersion{}
-		err = json.Unmarshal(out, version)
-		if err != nil {
-			return fmt.Errorf("failed to unmarshal docker version: %v", err)
-		}
-		if version.Client != version.Server {
-			os.Setenv("DOCKER_API_VERSION", version.Server)
-		}
-	}
+	/* not needed for singularity */
+	// if os.Getenv("DOCKER_API_VERSION") == "" {
+	// 	cmd := exec.Command("docker", "version", "--format", `{"Server": "{{.Server.APIVersion}}", "Client": "{{.Client.APIVersion}}"}`)
+	// 	out, err := cmd.Output()
+	// 	if err != nil {
+	// 		return fmt.Errorf("docker version command failed: %v", err)
+	// 	}
+	// 	version := &dockerVersion{}
+	// 	err = json.Unmarshal(out, version)
+	// 	if err != nil {
+	// 		return fmt.Errorf("failed to unmarshal docker version: %v", err)
+	// 	}
+	// 	if version.Client != version.Server {
+	// 		os.Setenv("DOCKER_API_VERSION", version.Server)
+	// 	}
+	// }
 	return nil
 }
