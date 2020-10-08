@@ -57,9 +57,15 @@ func (dcmd DockerCommand) Run(ctx context.Context) error {
 		args = append(args, "--pwd", dcmd.Workdir)
 	}
 
+	// keep index of bindings to avoid double mapping
+	volume_map := make(map[string]int)
 	for _, vol := range dcmd.Volumes {
 		arg := formatVolumeArg(vol, dcmd)
-		args = append(args, "--bind", arg)
+		if val, ok := volume_map[arg]; !ok {
+			// if NOT added yet
+			args = append(args, "--bind", arg)
+			volume_map[arg] = 1
+		}
 	}
 
 	args = append(args, dcmd.Image)
@@ -99,7 +105,18 @@ func formatVolumeArg(v Volume, dcmd DockerCommand) string {
 	if v.Readonly {
 		dcmd.Event.Error("Read only mount not supported")
 	}
-	return fmt.Sprintf("%s:%s", v.HostPath, v.ContainerPath)
+
+	hostPath := v.HostPath
+	containerPath := v.ContainerPath
+
+	if strings.HasPrefix(containerPath, "/cromwell-executions") {
+		// find everything after /cromwell-executions/
+		suffix_path := strings.Replace(containerPath, "/cromwell-executions/", "", 1)
+		containerPath = strings.Replace(containerPath, suffix_path, "", 1) // keep only /cromwell-executions/
+		hostPath = strings.Replace(hostPath, suffix_path, "", 1)
+	}
+
+	return fmt.Sprintf("%s:%s", hostPath, containerPath)
 }
 
 type metadata struct {
