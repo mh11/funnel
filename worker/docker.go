@@ -61,7 +61,7 @@ func (dcmd DockerCommand) Run(ctx context.Context) error {
 	volume_map := make(map[string]int)
 	for _, vol := range dcmd.Volumes {
 		arg := formatVolumeArg(vol, dcmd)
-		if val, ok := volume_map[arg]; !ok {
+		if _, ok := volume_map[arg]; !ok {
 			// if NOT added yet
 			args = append(args, "--bind", arg)
 			volume_map[arg] = 1
