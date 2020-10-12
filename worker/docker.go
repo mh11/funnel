@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"path"
+	"regexp"
 	"strings"
 
 	"github.com/ohsu-comp-bio/funnel/events"
@@ -67,8 +69,9 @@ func (dcmd DockerCommand) Run(ctx context.Context) error {
 			volume_map[arg] = 1
 		}
 	}
-
-	args = append(args, dcmd.Image)
+	img := path.Base(dcmd.Image)
+	img = regexp.MustCompile(`[^A-Za-z0-9._-]`).ReplaceAllString(img, "_") + ".img"
+	args = append(args, img)
 	args = append(args, dcmd.Command...)
 
 	// Ideally:
